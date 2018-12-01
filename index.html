@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="vue.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body>
+    <div id="app">
+        <svg xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <marker id='head' orient='auto' markerWidth='4' markerHeight='8' refX='3.4' refY='4'>
+                    <path d='M0,0 V8 L4,4 Z' fill='red' />
+                </marker>
+            </defs>
+            <g v-for="table in tables">
+                <foreign-path marker-end='url(#head)' v-for="foreignKey in table.foreignKeys" v-bind:foreign-key="foreignKey"
+                    v-bind:table="table" stroke-width='2' v-bind:tables="tables"></foreign-path>
+            </g>
+        </svg>
+
+        <table-card class="no-select" v-for="table in tables" v-bind:table="table" v-bind:edit-table="editTable"></table-card>
+
+        <div id="editor" v-if="editTable.table">
+            <div class="header">
+                <div class="title">
+                    <label>
+                        Table name: <table-input v-bind:tables="tables" v-bind:table="editTable.table" />
+                    </label>
+                </div>
+                <a v-on:click="editTable.table = null" class="close-btn" href="#">X</a>
+            </div>
+            <div class="container">
+                <div class="tabs">
+                    <a v-on:click="tab = 1" v-bind:class="tab == 1 ? 'selected' : ''" href="#">Column</a>
+                    <a v-on:click="tab = 2" v-bind:class="tab == 2 ? 'selected' : ''" href="#">Foreign Key</a>
+                    <a v-on:click="tab = 3" v-bind:class="tab == 3 ? 'selected' : ''" href="#">Other Action</a>
+                </div>
+                <div class="tabs-container">
+                    <div v-if="tab == 1">
+                        <table class="columns-table stripped">
+                            <thead>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Default value</th>
+                                <th>Action</th>
+                            </thead>
+                            <tr v-for="(column, index) in editTable.table.columns" :key="index">
+                                <td>
+                                    <column-input v-bind:table="editTable.table" v-bind:tables="tables" v-bind:column="column" />
+                                </td>
+                                <td>
+                                    <select v-model="column.type">
+                                        <option value="int">int</option>
+                                        <option value="varchar(64)">varchar(64)</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <input v-model="column.value" />
+                                </td>
+                                <td>
+                                    <button v-on:click="deleteColumn(column)" style="width: 100%">Delete Column</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="4">
+                                    <button v-on:click="addColumn()" style="width: 100%">Add Column</button>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div v-if="tab == 2">
+                        <table class="columns-table stripped">
+                            <thead>
+                                <th>Name</th>
+                                <th>Column</th>
+                                <th>foreignTable</th>
+                                <th>foreignColumn</th>
+                                <th>Action</th>
+                            </thead>
+                            <tr v-for="(foreignKey, index) in editTable.table.foreignKeys" :key="index">
+                                <td>
+                                    <input v-model="foreignKey.name" />
+                                </td>
+                                <td>
+                                    <select v-model="foreignKey.column">
+                                        <option v-for="(column, index) in editTable.table.columns" :key="index"
+                                            v-bind:value="column.name">{{column.name}}</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <select v-model="foreignKey.foreignTable">
+                                        <option v-for="(table, index) in tables" :key="index" v-bind:value="table.name">{{table.name}}</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <select v-if="foreignKey.foreignTable" v-model="foreignKey.foreignColumn">
+                                        <option v-for="(column, index) in findTableByName(foreignKey.foreignTable)[0].columns"
+                                            :key="index" v-bind:value="column.name">{{column.name}}</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <button v-on:click="deleteForeignKey(foreignKey)" style="width: 100%">Delete FK</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="5">
+                                    <button v-on:click="addForeignKey()" style="width: 100%">Add ForeignKey</button>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div v-if="tab == 3">
+                        <button v-on:click="deleteTable(editTable.table)">Delete Table</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <button style="position: absolute" v-on:click="addTable()">Add Table</button>
+        <button style="position: absolute; bottom: 8px" v-on:click="save(JSON.stringify(tables), 'db.json', 'text/plain')">Save
+            Design</button>
+        <input id="file-open" v-on:input="open()" style="position: absolute; bottom: 8px; right: 8px" type='file' id='fileinput'>
+    </div>
+</body>
+
+<!-- <script src="data.js"></script> -->
+<script src="script.js"></script>
+
+</html>
