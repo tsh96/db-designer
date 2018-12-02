@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <link rel="manifest" href="/manifest.json">
+    <title>Database Designer</title>
     <script src="vue.js"></script>
     <link rel="stylesheet" type="text/css" href="style.css">
 </head>
@@ -30,7 +31,8 @@
             <div class="header">
                 <div class="title">
                     <label>
-                        Table name: <table-input v-bind:tables="tables" v-bind:table="editTable.table" />
+                        Table name:
+                        <table-input v-bind:tables="tables" v-bind:table="editTable.table" />
                     </label>
                 </div>
                 <a v-on:click="editTable.table = null" class="close-btn" href="#">X</a>
@@ -125,6 +127,7 @@
         <button style="position: absolute" v-on:click="addTable()">Add Table</button>
         <button style="position: absolute; bottom: 8px" v-on:click="save(JSON.stringify(tables), 'db.json', 'text/plain')">Save
             Design</button>
+        <button style="position: absolute; right: 8px" v-on:click="toggleFullscreen()">Toggle Fullscreen</button>
         <input id="file-open" v-on:input="open()" style="position: absolute; bottom: 8px; right: 8px" type='file' id='fileinput'>
     </div>
 </body>

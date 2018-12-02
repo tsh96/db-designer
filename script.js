@@ -3,7 +3,7 @@ var tables = JSON.parse(window.localStorage.getItem('tables')) || [];
 Vue.component('table-card', {
     props: ['table', 'editTable'],
     template: '<div class="table stripped" v-bind:style="{left: table.x + \'px\', top: table.y + \'px\'}"' +
-        '   v-on:mousedown="mouseDown" v-on:dblclick="editTable.table = table">' +
+        '   v-on:mousedown="mouseDown" v-on:touchstart="touchstart" v-on:dblclick="editTable.table = table">' +
         '   <div class="table-name">{{ table.name }}</div>' +
         '   <table>' +
         '       <tr v-for="column in table.columns">' +
@@ -26,6 +26,24 @@ Vue.component('table-card', {
 
             window.addEventListener('mousemove', move, !1);
             window.addEventListener('mouseup', up, !1);
+        },
+        touchstart: function (e1) {
+            var table = this.table;
+
+            var tx = table.x;
+            var ty = table.y;
+
+            function touchmove(e2) {
+                table.x = tx + (e2.touches[0].clientX - e1.touches[0].clientX);
+                table.y = ty + (e2.touches[0].clientY - e1.touches[0].clientY);
+            }
+
+            function touchend() {
+                window.removeEventListener('touchmove', touchmove, !1);
+            }
+
+            window.addEventListener('touchmove', touchmove, !1);
+            window.addEventListener('touchend', touchend, !1);
         }
     }
 });
@@ -218,6 +236,19 @@ var app = new Vue({
         },
         'changeColumnName': function (e) {
             console.log(e);
+        },
+        'toggleFullscreen': function () {
+            var doc = window.document;
+            var docEl = doc.documentElement;
+
+            var requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+            var cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
+
+            if (!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
+                requestFullScreen.call(docEl);
+            } else {
+                cancelFullScreen.call(doc);
+            }
         }
     },
 
